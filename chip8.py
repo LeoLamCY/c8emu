@@ -24,8 +24,9 @@ class Chip8(object):
         0xF0, 0x80, 0xF0, 0x80, 0x80
     ]
 
-    def __init__(self):
+    def __init__(self, display):
         self.reset()
+        self.display = display
 
     def reset(self):
         self.pc = 0x200
@@ -72,12 +73,18 @@ class Chip8(object):
         n = bit_and(instruction, 0x000f)
         nn = bit_and(instruction, 0x00ff)
         nnn = bit_and(instruction, 0x0fff)
+        print(instruction)
+        print(self.v)
 
-        if inst == "0x000":
-            if y == int("0x00e0", 16):
+        if inst == "0x0000":
+            nn = format(nn, "#06x")
+            y = format(bit_and(instruction, 0x00f0), "#06x")
+            if y == "0x00e0":
                 # clear disp
-                pass
-            elif nn == int("0x00ee", 16):
+                self.display.clear_screen()
+                self.pc += 2
+
+            elif nn == "0x00ee":
                 # return from subroutine
                 self.sp -= 1
                 self.pc = self.stack[self.sp]
@@ -128,9 +135,12 @@ class Chip8(object):
         elif inst == "0x7000":
             # Adds NN to VX.
             self.v[x] += nn
+            if self.v[x] > 255:
+                self.v[x] -= 256
             self.pc += 2
 
         elif inst == "0x8000":
+            n = format(n, "#06x")
             if n == "0x0000":
                 # Sets VX to the value of VY.
                 self.v[x] = self.v[y]
@@ -224,11 +234,16 @@ class Chip8(object):
         elif inst == "0xd000":
             # Draws a sprite at coordinate (VX, VY) that has a width of 8
             # pixels and a height of N pixels.
+            sprite = []
+            for i in range(n):
+                sprite.append(int(self.memory[self.i + i], 16))
+            self.v[0xf] = self.display.draw_sprite(
+                self.v[x], self.v[y], sprite)
             self.pc += 2
-            pass
 
         elif inst == "0xe000":
-            if bit_and(instruction, 0x00ff) == "0x009e":
+            nn = format(nn, "#06x")
+            if nn == "0x009e":
                 # Skips the next instruction if the key stored in VX is pressed.
                 # (Usually the next instruction is a jump to skip a code block)
                 if self.keys[self.v[x]] == 1:
@@ -236,7 +251,7 @@ class Chip8(object):
                 else:
                     self.pc += 2
 
-            elif bit_and(instruction, 0x00ff) == "0x00a1":
+            elif nn == "0x00a1":
                 # Skips the next instruction if the key stored in VX isn't pressed.
                 # (Usually the next instruction is a jump to skip a code block)
                 if self.keys[self.v[x]] == 0:
@@ -248,6 +263,7 @@ class Chip8(object):
                 raise Exception(self.ERROR_UNKNOWN_OPCODE)
 
         elif inst == "0xf000":
+            nn = format(nn, "#06x")
             if nn == "0x0007":
                 # Sets VX to the value of the delay timer.
                 self.v[x] = self.delay_timer
@@ -255,6 +271,7 @@ class Chip8(object):
             elif nn == "0x000a":
                 # A key press is awaited, and then stored in VX. (Blocking
                 # Operation. All instruction halted until next key event)
+                print("wait key press")
                 pass
 
             elif nn == "0x0015":
@@ -267,6 +284,8 @@ class Chip8(object):
 
             elif nn == "0x001e":
                 # Adds VX to I.
+                print('vx', self.v[x])
+                print('i', self.i)
                 self.i += self.v[x]
 
             elif nn == "0x0029":
@@ -280,29 +299,23 @@ class Chip8(object):
                 # the most significant of three digits at the address in I, the
                 # middle digit at I plus 1, and the least significant digit at
                 # I plus 2.
-                vx = bin(self.v[x])
-                self.memory[self.i] = vx[0]
-                try:
-                    self.memory[self.i + 1] = vx[1]
-                except:
-                    self.memory[self.i + 1] = 0
-
-                try:
-                    self.memory[self.i + 2] = vx[2]
-                except:
-                    self.memory[self.i + 2] = 0
+                vx = self.v[x]
+                for i in range(3):
+                    digit = vx % 10
+                    self.memory[self.i + i] = digit
+                    vx = vx / 10
 
             elif nn == "0x0055":
                 # Stores V0 to VX (including VX) in memory starting at address
                 # I.
-                for i in range(0, 16):
+                for i in range(0, x + 1):
                     self.memory[self.i + i] = self.v[i]
 
             elif nn == "0x0065":
                 # Fills V0 to VX (including VX) with values from memory
                 # starting at address I.
-                for i in range(0, 16):
-                    self.v[i] = self.memory[self.i + i]
+                for i in range(0, x + 1):
+                    self.v[i] = int(self.memory[self.i + i], 16)
 
             self.pc += 2
         else:
