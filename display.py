@@ -18,6 +18,25 @@ class Display(object):
         viewport).resize((screen_width, screen_height))
     color = (255, 255, 255)
     viewport_changed = False
+    paused = False
+    keys = {
+        1: pygame.K_1,
+        2: pygame.K_2,
+        3: pygame.K_3,
+        4: pygame.K_q,
+        5: pygame.K_w,
+        6: pygame.K_e,
+        7: pygame.K_a,
+        8: pygame.K_s,
+        9: pygame.K_d,
+        10: pygame.K_z,
+        0: pygame.K_x,
+        11: pygame.K_c,
+        12: pygame.K_4,
+        13: pygame.K_5,
+        14: pygame.K_6,
+        15: pygame.K_7
+    }
 
     def __init__(self, rom):
         pygame.init()
@@ -35,7 +54,8 @@ class Display(object):
         self.viewport_changed = True
 
         while not self.done:
-            self.chip8.emulateCycle()
+            if not self.paused:
+                self.chip8.emulateCycle()
             if not self.chip8.running:
                 self.done = True
 
@@ -43,7 +63,7 @@ class Display(object):
                 if event.type == pygame.QUIT:
                     self.done = True
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    x += 1
+                    self.paused = False
 
             # pressed = pygame.key.get_pressed()
             # if pressed[pygame.K_UP]:
@@ -90,20 +110,25 @@ class Display(object):
     def draw_sprite(self, x, y, sprite):
         collision = 0
         # self.viewport = np.zeros((self.width, self.height), np.uint8)
-        print(sprite)
-
         for i in range(len(sprite)):
             for j in range(8):
                 x_pos = x + j
                 y_pos = y + i
+
                 if x_pos >= self.width:
-                    x_pos = x - self.width + j
-                # elif x + j < 0:
-                #     x += self.width
+                    # x_pos -= self.width
+                    continue
+                elif x_pos < 0:
+                    # x_pos += self.width
+                    continue
+
                 if y_pos >= self.height:
-                    y_pos = y - self.height + i
-                # elif y + i < 0:
-                #     y += self.height
+                    # y_pos -= self.height
+                    continue
+                elif y_pos < 0:
+                    # y += self.height
+                    continue
+
                 shifted = sprite[i] << j
                 # if sprite == [128]:
                 #     print(x_pos, y_pos)
@@ -122,3 +147,9 @@ class Display(object):
         # pixel.fill(color)
         # for y in range(height):
         #     for x in range(width):
+
+    def pause(self):
+        self.paused = True
+
+    def isKeyPressed(self, key):
+        return pygame.key.get_pressed()[self.keys[key]]

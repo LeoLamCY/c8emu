@@ -33,7 +33,7 @@ class Chip8(object):
         self.pc = 0x200
         self.v = 16 * [0]
         self.i = 0
-        self.memory = 512 * [0]
+        self.memory = 0x1000 * [0]
         self.delay_timer = None
         self.sound_timer = None
         self.stack = 16 * [0]
@@ -44,8 +44,10 @@ class Chip8(object):
             self.memory[i] = hex(font)[2:]
 
     def load_rom(self, rom):
+        k = 0
         for i in range(0, len(rom), 2):
-            self.memory.append(rom[i:i + 2])
+            self.memory[k + 0x200] = rom[i:i + 2]
+            k += 1
 
     def emulateCycle(self):
         # print(self.memory)
@@ -74,7 +76,9 @@ class Chip8(object):
         n = bit_and(instruction, 0x000f)
         nn = bit_and(instruction, 0x00ff)
         nnn = bit_and(instruction, 0x0fff)
-        # print(self.v)
+        # print(self.memory)
+        print(instruction)
+        print(self.v)
         # self.count += 1
 
         if inst == "0x0000":
@@ -203,7 +207,8 @@ class Chip8(object):
             self.pc += 2
 
         elif inst == "0x9000":
-            if bit_and(instruction, 0x000f) != "0x000":
+            n = format(n, "#06x")
+            if n != "0x0000":
                 raise Exception(self.ERROR_UNKNOWN_OPCODE)
             # Skips the next instruction if VX doesn't equal VY. (Usually the
             # next instruction is a jump to skip a code block)
@@ -247,7 +252,7 @@ class Chip8(object):
             if nn == "0x009e":
                 # Skips the next instruction if the key stored in VX is pressed.
                 # (Usually the next instruction is a jump to skip a code block)
-                if self.keys[self.v[x]] == 1:
+                if self.display.isKeyPressed(self.v[x]):
                     self.pc += 4
                 else:
                     self.pc += 2
@@ -255,7 +260,7 @@ class Chip8(object):
             elif nn == "0x00a1":
                 # Skips the next instruction if the key stored in VX isn't pressed.
                 # (Usually the next instruction is a jump to skip a code block)
-                if self.keys[self.v[x]] == 0:
+                if not self.display.isKeyPressed(self.v[x]):
                     self.pc += 4
                 else:
                     self.pc += 2
@@ -272,7 +277,7 @@ class Chip8(object):
             elif nn == "0x000a":
                 # A key press is awaited, and then stored in VX. (Blocking
                 # Operation. All instruction halted until next key event)
-                print("wait key press")
+                self.display.pause()
 
             elif nn == "0x0015":
                 # Sets the delay timer to VX.
@@ -298,8 +303,7 @@ class Chip8(object):
                 # middle digit at I plus 1, and the least significant digit at
                 # I plus 2.
                 vx = self.v[x]
-                print(self.memory)
-                for i in range(3):
+                for i in range(2, 0, -1):
                     digit = vx % 10
                     self.memory[self.i + i] = digit
                     vx /= 10
