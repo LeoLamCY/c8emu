@@ -74,18 +74,16 @@ class Chip8(object):
         nn = bit_and(instruction, 0x00ff)
         nnn = bit_and(instruction, 0x0fff)
         print(instruction)
-        print(self.v)
 
         if inst == "0x0000":
             nn = format(nn, "#06x")
-            y = format(bit_and(instruction, 0x00f0), "#06x")
-            if y == "0x00e0":
+            if nn == "0x00e0":
                 # clear disp
                 self.display.clear_screen()
                 self.pc += 2
-
             elif nn == "0x00ee":
                 # return from subroutine
+                print(self.stack)
                 self.sp -= 1
                 self.pc = self.stack[self.sp]
             else:
@@ -96,8 +94,8 @@ class Chip8(object):
             self.pc = nnn
 
         elif inst == "0x2000":
-            # calls subroutine at NNN
-            self.stack[self.sp] = self.pc
+            # calls subroutine at nnn
+            self.stack[self.sp] = self.pc + 2
             self.sp += 1
             self.pc = nnn
 
@@ -272,7 +270,6 @@ class Chip8(object):
                 # A key press is awaited, and then stored in VX. (Blocking
                 # Operation. All instruction halted until next key event)
                 print("wait key press")
-                pass
 
             elif nn == "0x0015":
                 # Sets the delay timer to VX.
@@ -284,8 +281,6 @@ class Chip8(object):
 
             elif nn == "0x001e":
                 # Adds VX to I.
-                print('vx', self.v[x])
-                print('i', self.i)
                 self.i += self.v[x]
 
             elif nn == "0x0029":
@@ -314,8 +309,12 @@ class Chip8(object):
             elif nn == "0x0065":
                 # Fills V0 to VX (including VX) with values from memory
                 # starting at address I.
+                # TODO normalize memory format
                 for i in range(0, x + 1):
-                    self.v[i] = int(self.memory[self.i + i], 16)
+                    try:
+                        self.v[i] = int(self.memory[self.i + i], 16)
+                    except:
+                        self.v[i] = self.memory[self.i + i]
 
             self.pc += 2
         else:

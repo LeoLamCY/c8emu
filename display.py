@@ -45,9 +45,9 @@ class Display(object):
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     x += 1
 
-            pressed = pygame.key.get_pressed()
-            if pressed[pygame.K_UP]:
-                y += 3
+            # pressed = pygame.key.get_pressed()
+            # if pressed[pygame.K_UP]:
+            #     y += 3
             # pygame.draw.rect(self.screen, self.color,
             #                  pygame.Rect(x, y, 60, 60))
 
@@ -64,7 +64,7 @@ class Display(object):
 
     def clear_screen(self):
         # self.screen.fill((0, 0, 0))
-        self.viewport = np.zeros((self.height, self.width), np.uint8)
+        self.viewport = np.zeros((self.width, self.height), np.uint8)
         self.viewport_changed = True
 
     def resize_viewport(self):
@@ -76,6 +76,12 @@ class Display(object):
 
     def draw_screen(self):
         self.resize_viewport()
+        self.screen.fill((0, 0, 0))
+        # surf = pygame.surfarray.make_surface(self.viewport)
+        # print(surf.get_at((12, 2)))
+        # surf = pygame.transform.scale(
+        #     surf, (self.screen_width, self.screen_height))
+        # self.screen = surf
         screen_pixel_array = pygame.PixelArray(self.screen)
         for y in range(self.screen_height):
             for x in range(self.screen_width):
@@ -83,9 +89,10 @@ class Display(object):
                     screen_pixel_array[x][y] = self.color
 
     def draw_sprite(self, x, y, sprite):
-        # print(x, y)
-        # print(sprite)
+        print(x, y)
+        print(sprite)
         collision = 0
+        self.viewport = np.zeros((self.height, self.width), np.uint8)
 
         for i in range(len(sprite)):
             for j in range(8):
@@ -101,10 +108,9 @@ class Display(object):
                 #     y += self.height
                 shifted = sprite[i] << j
                 if shifted & 0x80 > 0:
-                    if self.viewport[y_pos][x_pos] == 1:
+                    self.viewport[y_pos][x_pos] ^= 1
+                    if self.viewport[y_pos][x_pos] == 0:
                         collision = 1
-                    else:
-                        self.viewport[y_pos][x_pos] = 1
         self.viewport_changed = True
         return collision
 
