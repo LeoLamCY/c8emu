@@ -5,4 +5,5 @@ An emulator/interpretor for CHIP-8 written in Python. Pygame is used to support 
 ## License
 
 Copyright (c) Leo Lam 2017
+
 C8Emu is released under the MIT license. See LICENSE for details.
