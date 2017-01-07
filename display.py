@@ -3,6 +3,8 @@ from chip8 import Chip8
 import numpy as np
 from PIL import Image
 import pygame.surfarray as surfarray
+from pygame import midi
+import time
 
 # numpy height width
 # pillow width height
@@ -47,6 +49,7 @@ class Display(object):
         self.chip8 = Chip8(self)
         self.chip8.load_rom(rom)
         self.clock = pygame.time.Clock()
+        self.sound = pygame.mixer.Sound('sound\\beep.wav')
 
     def start(self):
         x = 0
@@ -153,3 +156,6 @@ class Display(object):
 
     def isKeyPressed(self, key):
         return pygame.key.get_pressed()[self.keys[key]]
+
+    def playSound(self):
+        self.sound.play()

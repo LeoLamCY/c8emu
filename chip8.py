@@ -62,7 +62,8 @@ class Chip8(object):
 
         if self.sound_timer > 0:
             # make sound
-            self.sound_timer -= 1
+            self.display.playSound()
+            self.sound_timer = 0
 
     def read_execute_instruction(self, instruction):
         def bit_and(instruction, and_target):
@@ -77,8 +78,8 @@ class Chip8(object):
         nn = bit_and(instruction, 0x00ff)
         nnn = bit_and(instruction, 0x0fff)
         # print(self.memory)
-        print(instruction)
-        print(self.v)
+        # print(instruction)
+        # print(self.v)
         # self.count += 1
 
         if inst == "0x0000":
