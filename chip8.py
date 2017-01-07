@@ -4,6 +4,7 @@ import random
 class Chip8(object):
     ERROR_UNKNOWN_OPCODE = "ERROR: unknown opcode"
     running = False
+    count = 0
 
     font_set = [
         0xF0, 0x90, 0x90, 0x90, 0xF0,
@@ -40,7 +41,7 @@ class Chip8(object):
         self.keys = 16 * [0]
 
         for i, font in enumerate(self.font_set):
-            self.memory[i] = hex(font)
+            self.memory[i] = hex(font)[2:]
 
     def load_rom(self, rom):
         for i in range(0, len(rom), 2):
@@ -73,7 +74,8 @@ class Chip8(object):
         n = bit_and(instruction, 0x000f)
         nn = bit_and(instruction, 0x00ff)
         nnn = bit_and(instruction, 0x0fff)
-        print(instruction)
+        # print(self.v)
+        # self.count += 1
 
         if inst == "0x0000":
             nn = format(nn, "#06x")
@@ -83,7 +85,6 @@ class Chip8(object):
                 self.pc += 2
             elif nn == "0x00ee":
                 # return from subroutine
-                print(self.stack)
                 self.sp -= 1
                 self.pc = self.stack[self.sp]
             else:
@@ -233,6 +234,8 @@ class Chip8(object):
             # Draws a sprite at coordinate (VX, VY) that has a width of 8
             # pixels and a height of N pixels.
             sprite = []
+            # print(self.memory[self.i])
+            # print(self.v[x], self.v[y])
             for i in range(n):
                 sprite.append(int(self.memory[self.i + i], 16))
             self.v[0xf] = self.display.draw_sprite(
@@ -295,10 +298,11 @@ class Chip8(object):
                 # middle digit at I plus 1, and the least significant digit at
                 # I plus 2.
                 vx = self.v[x]
+                print(self.memory)
                 for i in range(3):
                     digit = vx % 10
                     self.memory[self.i + i] = digit
-                    vx = vx / 10
+                    vx /= 10
 
             elif nn == "0x0055":
                 # Stores V0 to VX (including VX) in memory starting at address

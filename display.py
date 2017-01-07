@@ -13,7 +13,7 @@ class Display(object):
     screen_height = 160
     width = 64
     height = 32
-    viewport = np.zeros((height, width), np.uint8)
+    viewport = np.zeros((width, height), np.uint8)
     resized_viewport = Image.fromarray(
         viewport).resize((screen_width, screen_height))
     color = (255, 255, 255)
@@ -60,10 +60,10 @@ class Display(object):
                 self.viewport_changed = False
             # self.draw_screen()
             pygame.display.flip()
-            # self.clock.tick(60)
+            self.clock.tick(400)
 
     def clear_screen(self):
-        # self.screen.fill((0, 0, 0))
+        self.screen.fill((0, 0, 0))
         self.viewport = np.zeros((self.width, self.height), np.uint8)
         self.viewport_changed = True
 
@@ -75,24 +75,22 @@ class Display(object):
         # print(self.resized_viewport.shape)
 
     def draw_screen(self):
-        self.resize_viewport()
-        self.screen.fill((0, 0, 0))
-        # surf = pygame.surfarray.make_surface(self.viewport)
-        # print(surf.get_at((12, 2)))
-        # surf = pygame.transform.scale(
-        #     surf, (self.screen_width, self.screen_height))
-        # self.screen = surf
-        screen_pixel_array = pygame.PixelArray(self.screen)
-        for y in range(self.screen_height):
-            for x in range(self.screen_width):
-                if self.resized_viewport[y][x] == 1:
-                    screen_pixel_array[x][y] = self.color
+        # self.resize_viewport()
+        # self.screen.fill((0, 0, 0))
+        surf = pygame.surfarray.make_surface(self.viewport)
+        surf = pygame.transform.scale(
+            surf, (self.screen_width, self.screen_height))
+        self.screen.blit(surf, (0, 0))
+        # screen_pixel_array = pygame.PixelArray(self.screen)
+        # for y in range(self.screen_height):
+        #     for x in range(self.screen_width):
+        #         if surf.get_at((x, y)) != (0, 0, 0, 255):
+        #             screen_pixel_array[x][y] = self.color
 
     def draw_sprite(self, x, y, sprite):
-        print(x, y)
-        print(sprite)
         collision = 0
-        self.viewport = np.zeros((self.height, self.width), np.uint8)
+        # self.viewport = np.zeros((self.width, self.height), np.uint8)
+        print(sprite)
 
         for i in range(len(sprite)):
             for j in range(8):
@@ -107,10 +105,16 @@ class Display(object):
                 # elif y + i < 0:
                 #     y += self.height
                 shifted = sprite[i] << j
+                # if sprite == [128]:
+                #     print(x_pos, y_pos)
+                #     print(sprite)
                 if shifted & 0x80 > 0:
-                    self.viewport[y_pos][x_pos] ^= 1
-                    if self.viewport[y_pos][x_pos] == 0:
+                    if self.viewport[x_pos][y_pos] == 250:
+                        self.viewport[x_pos][y_pos] = 0
                         collision = 1
+                    else:
+                        self.viewport[x_pos][y_pos] = 250
+
         self.viewport_changed = True
         return collision
 
