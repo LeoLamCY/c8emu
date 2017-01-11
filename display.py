@@ -1,10 +1,9 @@
-import pygame
-from chip8 import Chip8
-import numpy as np
-from PIL import Image
-import pygame.surfarray as surfarray
-from pygame import midi
 import time
+import pygame
+import numpy as np
+import pygame.surfarray as surfarray
+from chip8 import Chip8
+from pygame import midi
 
 # numpy height width
 # pillow width height
@@ -16,10 +15,7 @@ class Display(object):
     width = 64
     height = 32
     viewport = np.zeros((width, height), np.uint8)
-    resized_viewport = Image.fromarray(
-        viewport).resize((screen_width, screen_height))
-    color = (255, 255, 255)
-    viewport_changed = False
+    color = 188
     paused = False
     keys = {
         1: pygame.K_1,
@@ -45,7 +41,6 @@ class Display(object):
         self.screen = pygame.display.set_mode(
             (self.screen_width, self.screen_height))
         self.done = False
-
         self.chip8 = Chip8(self)
         self.chip8.load_rom(rom)
         self.clock = pygame.time.Clock()
@@ -54,7 +49,6 @@ class Display(object):
     def start(self):
         x = 0
         y = 0
-        self.viewport_changed = True
 
         while not self.done:
             if not self.paused:
@@ -72,16 +66,6 @@ class Display(object):
 
             pygame.display.flip()
             self.clock.tick(400)
-
-    def clear_screen(self):
-        self.screen.fill((0, 0, 0))
-        self.viewport = np.zeros((self.width, self.height), np.uint8)
-        self.viewport_changed = True
-
-    def resize_viewport(self):
-        self.resized_viewport = Image.fromarray(
-            self.viewport).resize((self.screen_width, self.screen_height))
-        self.resized_viewport = np.array(self.resized_viewport, np.uint8)
 
     def draw_screen(self):
         surf = pygame.surfarray.make_surface(self.viewport)
@@ -104,13 +88,12 @@ class Display(object):
 
                 shifted = sprite[i] << j
                 if shifted & 0x80 > 0:
-                    if self.viewport[x_pos][y_pos] == 250:
+                    if self.viewport[x_pos][y_pos] == self.color:
                         self.viewport[x_pos][y_pos] = 0
                         collision = 1
                     else:
-                        self.viewport[x_pos][y_pos] = 250
+                        self.viewport[x_pos][y_pos] = self.color
 
-        self.viewport_changed = True
         return collision
 
     def pause(self):
