@@ -50,9 +50,6 @@ class Chip8(object):
             k += 1
 
     def emulateCycle(self):
-        # print(self.memory)
-        # print(
-        #     "reading:" + hex(int(self.memory[self.pc] + self.memory[self.pc + 1], 16)))
         self.running = True
         self.read_execute_instruction(
             self.memory[self.pc] + self.memory[self.pc + 1])
@@ -67,8 +64,6 @@ class Chip8(object):
 
     def read_execute_instruction(self, instruction):
         def bit_and(instruction, and_target):
-            # return format((int(instruction, 16) & and_target), 'x')
-            # return int
             return int(instruction, 16) & and_target
 
         inst = format(int(instruction, 16) & 0xf000, "#06x")
@@ -77,10 +72,6 @@ class Chip8(object):
         n = bit_and(instruction, 0x000f)
         nn = bit_and(instruction, 0x00ff)
         nnn = bit_and(instruction, 0x0fff)
-        # print(self.memory)
-        # print(instruction)
-        # print(self.v)
-        # self.count += 1
 
         if inst == "0x0000":
             nn = format(nn, "#06x")
@@ -240,8 +231,6 @@ class Chip8(object):
             # Draws a sprite at coordinate (VX, VY) that has a width of 8
             # pixels and a height of N pixels.
             sprite = []
-            # print(self.memory[self.i])
-            # print(self.v[x], self.v[y])
             for i in range(n):
                 sprite.append(int(self.memory[self.i + i], 16))
             self.v[0xf] = self.display.draw_sprite(

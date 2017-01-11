@@ -68,20 +68,8 @@ class Display(object):
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     self.paused = False
 
-            # pressed = pygame.key.get_pressed()
-            # if pressed[pygame.K_UP]:
-            #     y += 3
-            # pygame.draw.rect(self.screen, self.color,
-            #                  pygame.Rect(x, y, 60, 60))
+            self.draw_screen()
 
-            # for y in range(20):
-            #     for x in range(50):
-            #         self.viewport[y][x] = 1
-
-            if self.viewport_changed:
-                self.draw_screen()
-                self.viewport_changed = False
-            # self.draw_screen()
             pygame.display.flip()
             self.clock.tick(400)
 
@@ -94,48 +82,27 @@ class Display(object):
         self.resized_viewport = Image.fromarray(
             self.viewport).resize((self.screen_width, self.screen_height))
         self.resized_viewport = np.array(self.resized_viewport, np.uint8)
-        # print(self.viewport.shape)
-        # print(self.resized_viewport.shape)
 
     def draw_screen(self):
-        # self.resize_viewport()
-        # self.screen.fill((0, 0, 0))
         surf = pygame.surfarray.make_surface(self.viewport)
         surf = pygame.transform.scale(
             surf, (self.screen_width, self.screen_height))
         self.screen.blit(surf, (0, 0))
-        # screen_pixel_array = pygame.PixelArray(self.screen)
-        # for y in range(self.screen_height):
-        #     for x in range(self.screen_width):
-        #         if surf.get_at((x, y)) != (0, 0, 0, 255):
-        #             screen_pixel_array[x][y] = self.color
 
     def draw_sprite(self, x, y, sprite):
         collision = 0
-        # self.viewport = np.zeros((self.width, self.height), np.uint8)
         for i in range(len(sprite)):
             for j in range(8):
                 x_pos = x + j
                 y_pos = y + i
 
-                if x_pos >= self.width:
-                    # x_pos -= self.width
-                    continue
-                elif x_pos < 0:
-                    # x_pos += self.width
+                if x_pos >= self.width or x_pos < 0:
                     continue
 
-                if y_pos >= self.height:
-                    # y_pos -= self.height
-                    continue
-                elif y_pos < 0:
-                    # y += self.height
+                if y_pos >= self.height or y_pos < 0:
                     continue
 
                 shifted = sprite[i] << j
-                # if sprite == [128]:
-                #     print(x_pos, y_pos)
-                #     print(sprite)
                 if shifted & 0x80 > 0:
                     if self.viewport[x_pos][y_pos] == 250:
                         self.viewport[x_pos][y_pos] = 0
@@ -145,11 +112,6 @@ class Display(object):
 
         self.viewport_changed = True
         return collision
-
-        # pixel = pygame.Surface((1, 1))
-        # pixel.fill(color)
-        # for y in range(height):
-        #     for x in range(width):
 
     def pause(self):
         self.paused = True
