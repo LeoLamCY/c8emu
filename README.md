@@ -4,6 +4,10 @@ An emulator/interpretor for CHIP-8 written in Python. Pygame is used to support 
 
 ## Usage
 
+Pygame is required:
+`pip install pygame`
+
+To run the emulator:
 `python main.py <rom_name>`
 
 ## License
